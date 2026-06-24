@@ -1,0 +1,7 @@
+dist
+node_modules
+coverage
+uploads/*
+!uploads/.gitkeep
+.env
+.idea
