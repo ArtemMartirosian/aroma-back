@@ -18,6 +18,11 @@ export class CreateBrandDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  image?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   description?: string;
 
   @ApiPropertyOptional()

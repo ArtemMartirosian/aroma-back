@@ -8,54 +8,63 @@ const brands = [
     name: 'Dior',
     slug: 'dior',
     logo: 'DI',
+    image: IMAGE_URL,
     description: 'Французский модный дом с культовыми свежими и цветочными ароматами.',
   },
   {
     name: 'Chanel',
     slug: 'chanel',
     logo: 'CH',
+    image: IMAGE_URL,
     description: 'Классика французской парфюмерии: элегантные композиции и строгие флаконы.',
   },
   {
     name: 'Tom Ford',
     slug: 'tom-ford',
     logo: 'TF',
+    image: IMAGE_URL,
     description: 'Выразительные композиции с древесными, пряными и восточными акцентами.',
   },
   {
     name: 'Byredo',
     slug: 'byredo',
     logo: 'BY',
+    image: IMAGE_URL,
     description: 'Современная нишевая парфюмерия с минималистичной эстетикой.',
   },
   {
     name: 'Maison Francis Kurkdjian',
     slug: 'maison-francis-kurkdjian',
     logo: 'MFK',
+    image: IMAGE_URL,
     description: 'Французский нишевый дом с узнаваемыми люксовыми ароматами.',
   },
   {
     name: 'Creed',
     slug: 'creed',
     logo: 'CR',
+    image: IMAGE_URL,
     description: 'Парфюмерный дом с богатыми цитрусовыми, фруктовыми и древесными композициями.',
   },
   {
     name: 'Yves Saint Laurent',
     slug: 'yves-saint-laurent',
     logo: 'YSL',
+    image: IMAGE_URL,
     description: 'Смелые, модные и запоминающиеся ароматы для современной аудитории.',
   },
   {
     name: 'Gucci',
     slug: 'gucci',
     logo: 'GC',
+    image: IMAGE_URL,
     description: 'Итальянская эстетика, цветочные букеты и выразительная подача.',
   },
   {
     name: 'Versace',
     slug: 'versace',
     logo: 'VE',
+    image: IMAGE_URL,
     description: 'Яркие средиземноморские ароматы с энергичным характером.',
   },
 ];
@@ -409,6 +418,17 @@ async function main() {
       });
       brandBySlug.set(created.slug, created);
       console.log(`Created brand: ${created.name}`);
+    } else {
+      const existingBrand = brandBySlug.get(brand.slug);
+      if (!existingBrand.image || existingBrand.image !== brand.image) {
+        const updated = await request(`/admin/brands/${existingBrand.id}`, {
+          method: 'PATCH',
+          token: accessToken,
+          body: JSON.stringify({ image: brand.image, logo: brand.logo }),
+        });
+        brandBySlug.set(updated.slug, updated);
+        console.log(`Updated brand image: ${updated.name}`);
+      }
     }
   }
 

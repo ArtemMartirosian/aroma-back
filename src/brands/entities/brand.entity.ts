@@ -22,6 +22,9 @@ export class Brand {
   @Column({ nullable: true })
   logo?: string;
 
+  @Column({ nullable: true })
+  image?: string;
+
   @Column({ type: 'text', nullable: true })
   description?: string;
 
