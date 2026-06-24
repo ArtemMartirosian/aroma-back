@@ -32,8 +32,10 @@ class ProductVariantDto {
   @Min(0)
   oldPrice?: number;
 
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsBoolean()
-  isAvailable!: boolean;
+  isAvailable?: boolean;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -165,17 +167,14 @@ export class CreateProductDto {
       {
         volume: '20ml',
         price: 18000,
-        isAvailable: true,
       },
       {
         volume: '50ml',
         price: 39000,
-        isAvailable: true,
       },
       {
         volume: '100ml',
         price: 59000,
-        isAvailable: false,
       },
     ],
   })

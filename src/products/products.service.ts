@@ -191,14 +191,19 @@ export class ProductsService {
 
     const variants = rawVariants
       .filter((variant) => variant.volume && Number(variant.price) >= 0)
-      .map((variant) => ({
-        volume: variant.volume,
-        price: Number(variant.price),
-        oldPrice:
-          variant.oldPrice === undefined ? undefined : Number(variant.oldPrice),
-        isAvailable: Boolean(variant.isAvailable),
-        stockStatus: this.availabilityLabel(Boolean(variant.isAvailable)),
-      }));
+      .map((variant) => {
+        const isAvailable = variant.isAvailable ?? true;
+        return {
+          volume: variant.volume,
+          price: Number(variant.price),
+          oldPrice:
+            variant.oldPrice === undefined
+              ? undefined
+              : Number(variant.oldPrice),
+          isAvailable,
+          stockStatus: this.availabilityLabel(isAvailable),
+        };
+      });
 
     return variants.length
       ? variants
