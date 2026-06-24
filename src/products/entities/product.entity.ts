@@ -40,6 +40,14 @@ export enum Sillage {
   VeryStrong = 'very_strong',
 }
 
+export type ProductVariant = {
+  volume: string;
+  price: number;
+  oldPrice?: number;
+  isAvailable: boolean;
+  stockStatus: string;
+};
+
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn('uuid')
@@ -130,6 +138,9 @@ export class Product {
 
   @Column({ type: 'int', nullable: true })
   releaseYear?: number;
+
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  variants!: ProductVariant[];
 
   @CreateDateColumn()
   createdAt!: Date;

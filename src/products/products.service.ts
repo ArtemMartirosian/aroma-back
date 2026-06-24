@@ -5,7 +5,7 @@ import { slugify } from '../common/slug';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto, ProductSort } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
+import { Product, ProductVariant } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService {
@@ -118,11 +118,21 @@ export class ProductsService {
   }
 
   create(dto: CreateProductDto) {
+    const variants = this.normalizeVariants(dto);
     const product = this.productsRepository.create({
       ...dto,
-      slug: dto.slug || slugify(`${dto.name}-${dto.volume}`),
-      price: String(dto.price),
-      oldPrice: dto.oldPrice === undefined ? undefined : String(dto.oldPrice),
+      slug: dto.slug || slugify(dto.name),
+      price: String(variants[0]?.price ?? dto.price),
+      oldPrice:
+        variants[0]?.oldPrice === undefined
+          ? dto.oldPrice === undefined
+            ? undefined
+            : String(dto.oldPrice)
+          : String(variants[0].oldPrice),
+      volume: variants[0]?.volume ?? dto.volume,
+      isAvailable: variants[0]?.isAvailable ?? dto.isAvailable ?? true,
+      stockStatus: variants[0]?.stockStatus ?? dto.stockStatus ?? 'В наличии',
+      variants,
       galleryImages: dto.galleryImages ?? [],
     });
     return this.productsRepository.save(product);
@@ -130,18 +140,62 @@ export class ProductsService {
 
   async update(id: string, dto: UpdateProductDto) {
     const product = await this.findById(id);
+    const variants = this.normalizeVariants(dto, product);
     Object.assign(product, dto, {
-      slug:
-        dto.slug ||
-        (dto.name
-          ? slugify(`${dto.name}-${dto.volume ?? product.volume}`)
-          : product.slug),
-      price: dto.price === undefined ? product.price : String(dto.price),
+      slug: dto.slug || (dto.name ? slugify(dto.name) : product.slug),
+      price:
+        variants[0]?.price === undefined
+          ? product.price
+          : String(variants[0].price),
       oldPrice:
-        dto.oldPrice === undefined ? product.oldPrice : String(dto.oldPrice),
+        variants[0]?.oldPrice === undefined
+          ? dto.oldPrice === undefined
+            ? product.oldPrice
+            : String(dto.oldPrice)
+          : String(variants[0].oldPrice),
+      volume: variants[0]?.volume ?? product.volume,
+      isAvailable: variants[0]?.isAvailable ?? product.isAvailable,
+      stockStatus: variants[0]?.stockStatus ?? product.stockStatus,
+      variants,
       galleryImages: dto.galleryImages ?? product.galleryImages,
     });
     return this.productsRepository.save(product);
+  }
+
+  private normalizeVariants(
+    dto: Partial<CreateProductDto>,
+    existing?: Product,
+  ): ProductVariant[] {
+    const rawVariants = dto.variants?.length
+      ? dto.variants
+      : existing?.variants?.length
+        ? existing.variants
+        : [
+            {
+              volume: dto.volume ?? existing?.volume ?? '100ml',
+              price: Number(dto.price ?? existing?.price ?? 0),
+              oldPrice:
+                dto.oldPrice === undefined && existing?.oldPrice === undefined
+                  ? undefined
+                  : Number(dto.oldPrice ?? existing?.oldPrice),
+              isAvailable: dto.isAvailable ?? existing?.isAvailable ?? true,
+              stockStatus:
+                dto.stockStatus ?? existing?.stockStatus ?? 'В наличии',
+            },
+          ];
+
+    return rawVariants
+      .filter((variant) => variant.volume && Number(variant.price) >= 0)
+      .map((variant) => ({
+        volume: variant.volume,
+        price: Number(variant.price),
+        oldPrice:
+          variant.oldPrice === undefined ? undefined : Number(variant.oldPrice),
+        isAvailable: Boolean(variant.isAvailable),
+        stockStatus:
+          variant.stockStatus ||
+          (variant.isAvailable ? 'В наличии' : 'Нет в наличии'),
+      }));
   }
 
   async remove(id: string) {

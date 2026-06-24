@@ -401,6 +401,31 @@ async function request(path, options = {}) {
   return response.json();
 }
 
+function buildVariants(product) {
+  const price = Number(product.price);
+  return [
+    {
+      volume: '20ml',
+      price: Math.round(price * 0.42),
+      isAvailable: true,
+      stockStatus: 'В наличии',
+    },
+    {
+      volume: '50ml',
+      price: Math.round(price * 0.72),
+      isAvailable: true,
+      stockStatus: 'В наличии',
+    },
+    {
+      volume: product.volume || '100ml',
+      price,
+      oldPrice: product.oldPrice,
+      isAvailable: true,
+      stockStatus: 'В наличии',
+    },
+  ];
+}
+
 async function main() {
   const { accessToken } = await request('/auth/login', {
     method: 'POST',
@@ -447,10 +472,8 @@ async function main() {
   }
 
   const existingProducts = await request('/admin/products?limit=100', { token: accessToken });
-  const productSlugs = new Set(existingProducts.items.map((product) => product.slug));
+  const productBySlug = new Map(existingProducts.items.map((product) => [product.slug, product]));
   for (const product of products) {
-    if (productSlugs.has(product.slug)) continue;
-
     const brand = brandBySlug.get(product.brand);
     const category = categoryBySlug.get(product.category);
     if (!brand || !category) {
@@ -458,6 +481,22 @@ async function main() {
     }
 
     const { brand: _brand, category: _category, ...payload } = product;
+    const existingProduct = productBySlug.get(product.slug);
+    if (existingProduct?.variants?.length) continue;
+
+    if (existingProduct) {
+      const updated = await request(`/admin/products/${existingProduct.id}`, {
+        method: 'PATCH',
+        token: accessToken,
+        body: JSON.stringify({
+          variants: buildVariants(product),
+        }),
+      });
+      productBySlug.set(updated.slug, updated);
+      console.log(`Updated product variants: ${updated.name}`);
+      continue;
+    }
+
     const created = await request('/admin/products', {
       method: 'POST',
       token: accessToken,
@@ -467,12 +506,13 @@ async function main() {
         categoryId: category.id,
         mainImage: IMAGE_URL,
         galleryImages: [IMAGE_URL],
+        variants: buildVariants(product),
         isAvailable: true,
         stockStatus: 'В наличии',
         isActive: true,
       }),
     });
-    productSlugs.add(created.slug);
+    productBySlug.set(created.slug, created);
     console.log(`Created product: ${created.name}`);
   }
 

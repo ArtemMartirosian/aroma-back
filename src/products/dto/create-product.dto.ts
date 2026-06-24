@@ -1,12 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
   IsEnum,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import {
   FragranceType,
@@ -14,6 +17,27 @@ import {
   ProductGender,
   Sillage,
 } from '../entities/product.entity';
+
+class ProductVariantDto {
+  @IsString()
+  volume!: string;
+
+  @IsNumber()
+  @Min(0)
+  price!: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  oldPrice?: number;
+
+  @IsBoolean()
+  isAvailable!: boolean;
+
+  @IsString()
+  stockStatus!: string;
+}
 
 export class CreateProductDto {
   @IsString()
@@ -130,4 +154,33 @@ export class CreateProductDto {
   @IsOptional()
   @IsNumber()
   releaseYear?: number;
+
+  @ApiPropertyOptional({
+    example: [
+      {
+        volume: '20ml',
+        price: 18000,
+        isAvailable: true,
+        stockStatus: 'В наличии',
+      },
+      {
+        volume: '50ml',
+        price: 39000,
+        isAvailable: true,
+        stockStatus: 'В наличии',
+      },
+      {
+        volume: '100ml',
+        price: 59000,
+        isAvailable: false,
+        stockStatus: 'Нет в наличии',
+      },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  @ValidateNested({ each: true })
+  @Type(() => ProductVariantDto)
+  variants?: ProductVariantDto[];
 }
