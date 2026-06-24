@@ -38,8 +38,15 @@ export class ProductsService {
       qb.andWhere('product.gender = :gender', { gender: query.gender });
     if (query.type)
       qb.andWhere('product.fragranceType = :type', { type: query.type });
-    if (query.volume)
-      qb.andWhere('product.volume = :volume', { volume: query.volume });
+    if (query.volume) {
+      qb.andWhere(
+        '(product.volume = :volume OR product.variants @> CAST(:volumeVariant AS jsonb))',
+        {
+          volume: query.volume,
+          volumeVariant: JSON.stringify([{ volume: query.volume }]),
+        },
+      );
+    }
     if (query.minPrice !== undefined) {
       qb.andWhere('product.price >= :minPrice', {
         minPrice: query.minPrice,
@@ -119,19 +126,20 @@ export class ProductsService {
 
   create(dto: CreateProductDto) {
     const variants = this.normalizeVariants(dto);
+    const primaryVariant = this.getPrimaryVariant(variants);
     const product = this.productsRepository.create({
       ...dto,
       slug: dto.slug || slugify(dto.name),
-      price: String(variants[0]?.price ?? dto.price),
+      price: String(primaryVariant.price),
       oldPrice:
-        variants[0]?.oldPrice === undefined
+        primaryVariant.oldPrice === undefined
           ? dto.oldPrice === undefined
             ? undefined
             : String(dto.oldPrice)
-          : String(variants[0].oldPrice),
-      volume: variants[0]?.volume ?? dto.volume,
-      isAvailable: variants[0]?.isAvailable ?? dto.isAvailable ?? true,
-      stockStatus: variants[0]?.stockStatus ?? dto.stockStatus ?? 'В наличии',
+          : String(primaryVariant.oldPrice),
+      volume: primaryVariant.volume,
+      isAvailable: primaryVariant.isAvailable,
+      stockStatus: this.availabilityLabel(primaryVariant.isAvailable),
       variants,
       galleryImages: dto.galleryImages ?? [],
     });
@@ -141,21 +149,19 @@ export class ProductsService {
   async update(id: string, dto: UpdateProductDto) {
     const product = await this.findById(id);
     const variants = this.normalizeVariants(dto, product);
+    const primaryVariant = this.getPrimaryVariant(variants);
     Object.assign(product, dto, {
       slug: dto.slug || (dto.name ? slugify(dto.name) : product.slug),
-      price:
-        variants[0]?.price === undefined
-          ? product.price
-          : String(variants[0].price),
+      price: String(primaryVariant.price),
       oldPrice:
-        variants[0]?.oldPrice === undefined
+        primaryVariant.oldPrice === undefined
           ? dto.oldPrice === undefined
             ? product.oldPrice
             : String(dto.oldPrice)
-          : String(variants[0].oldPrice),
-      volume: variants[0]?.volume ?? product.volume,
-      isAvailable: variants[0]?.isAvailable ?? product.isAvailable,
-      stockStatus: variants[0]?.stockStatus ?? product.stockStatus,
+          : String(primaryVariant.oldPrice),
+      volume: primaryVariant.volume,
+      isAvailable: primaryVariant.isAvailable,
+      stockStatus: this.availabilityLabel(primaryVariant.isAvailable),
       variants,
       galleryImages: dto.galleryImages ?? product.galleryImages,
     });
@@ -179,12 +185,11 @@ export class ProductsService {
                   ? undefined
                   : Number(dto.oldPrice ?? existing?.oldPrice),
               isAvailable: dto.isAvailable ?? existing?.isAvailable ?? true,
-              stockStatus:
-                dto.stockStatus ?? existing?.stockStatus ?? 'В наличии',
+              stockStatus: dto.stockStatus ?? existing?.stockStatus,
             },
           ];
 
-    return rawVariants
+    const variants = rawVariants
       .filter((variant) => variant.volume && Number(variant.price) >= 0)
       .map((variant) => ({
         volume: variant.volume,
@@ -192,10 +197,33 @@ export class ProductsService {
         oldPrice:
           variant.oldPrice === undefined ? undefined : Number(variant.oldPrice),
         isAvailable: Boolean(variant.isAvailable),
-        stockStatus:
-          variant.stockStatus ||
-          (variant.isAvailable ? 'В наличии' : 'Нет в наличии'),
+        stockStatus: this.availabilityLabel(Boolean(variant.isAvailable)),
       }));
+
+    return variants.length
+      ? variants
+      : [
+          {
+            volume: dto.volume ?? existing?.volume ?? '100ml',
+            price: Number(dto.price ?? existing?.price ?? 0),
+            oldPrice:
+              dto.oldPrice === undefined && existing?.oldPrice === undefined
+                ? undefined
+                : Number(dto.oldPrice ?? existing?.oldPrice),
+            isAvailable: dto.isAvailable ?? existing?.isAvailable ?? true,
+            stockStatus: this.availabilityLabel(
+              dto.isAvailable ?? existing?.isAvailable ?? true,
+            ),
+          },
+        ];
+  }
+
+  private getPrimaryVariant(variants: ProductVariant[]) {
+    return [...variants].sort((a, b) => Number(a.price) - Number(b.price))[0];
+  }
+
+  private availabilityLabel(isAvailable: boolean) {
+    return isAvailable ? 'В наличии' : 'Нет в наличии';
   }
 
   async remove(id: string) {

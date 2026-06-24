@@ -35,8 +35,10 @@ class ProductVariantDto {
   @IsBoolean()
   isAvailable!: boolean;
 
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  stockStatus!: string;
+  stockStatus?: string;
 }
 
 export class CreateProductDto {
@@ -54,9 +56,10 @@ export class CreateProductDto {
   @IsString()
   categoryId!: string;
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  price!: number;
+  price?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -64,8 +67,10 @@ export class CreateProductDto {
   @Min(0)
   oldPrice?: number;
 
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  volume!: string;
+  volume?: string;
 
   @IsEnum(ProductGender)
   gender!: ProductGender;
@@ -161,19 +166,16 @@ export class CreateProductDto {
         volume: '20ml',
         price: 18000,
         isAvailable: true,
-        stockStatus: 'В наличии',
       },
       {
         volume: '50ml',
         price: 39000,
         isAvailable: true,
-        stockStatus: 'В наличии',
       },
       {
         volume: '100ml',
         price: 59000,
         isAvailable: false,
-        stockStatus: 'Нет в наличии',
       },
     ],
   })
