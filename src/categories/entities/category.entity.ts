@@ -1,39 +1,39 @@
 import { Product } from '../../products/entities/product.entity';
 import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    OneToMany,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn,
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('categories')
 export class Category {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
-    @Column({ unique: true })
-    name!: string;
+  @Column({ unique: true })
+  name!: string;
 
-    @Column({ unique: true })
-    slug!: string;
+  @Column({ unique: true })
+  slug!: string;
 
-    @Column({ type: 'text', nullable: true })
-    description?: string;
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
-    @Column({ nullable: true })
-    image?: string;
+  @Column({ nullable: true })
+  image?: string;
 
-    @Column({ default: true })
-    isActive!: boolean;
+  @Column({ default: true })
+  isActive!: boolean;
 
-    @OneToMany(() => Product, (product) => product.category)
-    products!: Product[];
+  @OneToMany(() => Product, (product) => product.category)
+  products!: Product[];
 
-    @CreateDateColumn()
-    createdAt!: Date;
+  @CreateDateColumn()
+  createdAt!: Date;
 
-    @UpdateDateColumn()
-    updatedAt!: Date;
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }
