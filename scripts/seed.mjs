@@ -117,6 +117,15 @@ const PRODUCT_IMAGE_BY_SLUG = {
   'versace-eros-eau-de-toilette-100ml': '/images/products/perfume-card-1.png',
 };
 
+const PRODUCT_IMAGES = [
+  '/images/products/perfume-card-1.png',
+  '/images/products/perfume-card-2.png',
+  '/images/products/perfume-card-3.png',
+  '/images/products/perfume-card-4.png',
+  '/images/products/perfume-card-5.png',
+  '/images/products/perfume-card-6.png',
+];
+
 const products = [
   {
     name: 'Dior Sauvage Eau de Parfum',
@@ -418,25 +427,29 @@ async function request(path, options = {}) {
 
 function buildVariants(product) {
   const price = Number(product.price);
+  const productImage = PRODUCT_IMAGE_BY_SLUG[product.slug] ?? IMAGE_URL;
+  const baseIndex = Math.max(PRODUCT_IMAGES.indexOf(productImage), 0);
+  const pickImages = (offset) => [
+    PRODUCT_IMAGES[(baseIndex + offset) % PRODUCT_IMAGES.length],
+    PRODUCT_IMAGES[(baseIndex + offset + 1) % PRODUCT_IMAGES.length],
+  ];
+
   return [
     {
       volume: '20ml',
       price: Math.round(price * 0.42),
-      isAvailable: true,
-      stockStatus: 'В наличии',
+      images: pickImages(0),
     },
     {
       volume: '50ml',
       price: Math.round(price * 0.72),
-      isAvailable: true,
-      stockStatus: 'В наличии',
+      images: pickImages(2),
     },
     {
       volume: product.volume || '100ml',
       price,
       oldPrice: product.oldPrice,
-      isAvailable: true,
-      stockStatus: 'В наличии',
+      images: pickImages(4),
     },
   ];
 }
@@ -495,23 +508,20 @@ async function main() {
       throw new Error(`Missing brand/category for ${product.name}`);
     }
 
-    const productImage = PRODUCT_IMAGE_BY_SLUG[product.slug] ?? IMAGE_URL;
     const { brand: _brand, category: _category, ...payload } = product;
     const existingProduct = productBySlug.get(product.slug);
     if (existingProduct) {
-      const needsVariants = !existingProduct.variants?.length;
-      const needsImage =
-        existingProduct.mainImage !== productImage ||
-        JSON.stringify(existingProduct.galleryImages ?? []) !== JSON.stringify([productImage]);
+      const needsVariants =
+        !existingProduct.variants?.length ||
+        existingProduct.variants.some((variant) => !variant.images?.length);
 
-      if (!needsVariants && !needsImage) continue;
+      if (!needsVariants) continue;
 
       const updated = await request(`/admin/products/${existingProduct.id}`, {
         method: 'PATCH',
         token: accessToken,
         body: JSON.stringify({
-          ...(needsVariants ? { variants: buildVariants(product) } : {}),
-          ...(needsImage ? { mainImage: productImage, galleryImages: [productImage] } : {}),
+          variants: buildVariants(product),
         }),
       });
       productBySlug.set(updated.slug, updated);
@@ -526,11 +536,7 @@ async function main() {
         ...payload,
         brandId: brand.id,
         categoryId: category.id,
-        mainImage: productImage,
-        galleryImages: [productImage],
         variants: buildVariants(product),
-        isAvailable: true,
-        stockStatus: 'В наличии',
         isActive: true,
       }),
     });

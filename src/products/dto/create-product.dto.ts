@@ -32,15 +32,11 @@ class ProductVariantDto {
   @Min(0)
   oldPrice?: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
-  @IsBoolean()
-  isAvailable?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  stockStatus?: string;
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
 }
 
 export class CreateProductDto {
@@ -85,27 +81,6 @@ export class CreateProductDto {
 
   @IsString()
   shortDescription!: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  mainImage?: string;
-
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  galleryImages?: string[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  isAvailable?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  stockStatus?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -167,14 +142,17 @@ export class CreateProductDto {
       {
         volume: '20ml',
         price: 18000,
+        images: ['/images/products/perfume-card-1.png'],
       },
       {
         volume: '50ml',
         price: 39000,
+        images: ['/images/products/perfume-card-2.png'],
       },
       {
         volume: '100ml',
         price: 59000,
+        images: ['/images/products/perfume-card-3.png'],
       },
     ],
   })

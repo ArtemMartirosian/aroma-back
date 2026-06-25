@@ -7,6 +7,8 @@ import { ProductQueryDto, ProductSort } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductVariant } from './entities/product.entity';
 
+const FALLBACK_PRODUCT_IMAGE = '/images/products/perfume-card-1.png';
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -82,7 +84,7 @@ export class ProductsService {
       .getManyAndCount();
 
     return {
-      items,
+      items: items.map((item) => this.toProductResponse(item)),
       meta: {
         total,
         page,
@@ -109,19 +111,24 @@ export class ProductsService {
       order: { createdAt: 'DESC' },
     });
 
-    return {
-      ...product,
-      relatedProducts: related.filter((item) => item.id !== product.id),
-    };
+    return this.toProductResponse(product, {
+      relatedProducts: related
+        .filter((item) => item.id !== product.id)
+        .map((item) => this.toProductResponse(item)),
+    });
   }
 
-  async findById(id: string) {
+  private async findEntityById(id: string) {
     const product = await this.productsRepository.findOne({
       where: { id },
       relations: { brand: true, category: true },
     });
     if (!product) throw new NotFoundException('Product not found');
     return product;
+  }
+
+  async findById(id: string) {
+    return this.toProductResponse(await this.findEntityById(id));
   }
 
   create(dto: CreateProductDto) {
@@ -138,16 +145,15 @@ export class ProductsService {
             : String(dto.oldPrice)
           : String(primaryVariant.oldPrice),
       volume: primaryVariant.volume,
-      isAvailable: primaryVariant.isAvailable,
-      stockStatus: this.availabilityLabel(primaryVariant.isAvailable),
       variants,
-      galleryImages: dto.galleryImages ?? [],
     });
-    return this.productsRepository.save(product);
+    return this.productsRepository
+      .save(product)
+      .then((saved) => this.toProductResponse(saved));
   }
 
   async update(id: string, dto: UpdateProductDto) {
-    const product = await this.findById(id);
+    const product = await this.findEntityById(id);
     const variants = this.normalizeVariants(dto, product);
     const primaryVariant = this.getPrimaryVariant(variants);
     Object.assign(product, dto, {
@@ -160,18 +166,18 @@ export class ProductsService {
             : String(dto.oldPrice)
           : String(primaryVariant.oldPrice),
       volume: primaryVariant.volume,
-      isAvailable: primaryVariant.isAvailable,
-      stockStatus: this.availabilityLabel(primaryVariant.isAvailable),
       variants,
-      galleryImages: dto.galleryImages ?? product.galleryImages,
     });
-    return this.productsRepository.save(product);
+    return this.productsRepository
+      .save(product)
+      .then((saved) => this.toProductResponse(saved));
   }
 
   private normalizeVariants(
     dto: Partial<CreateProductDto>,
     existing?: Product,
   ): ProductVariant[] {
+    const legacyImages = this.legacyImages(dto, existing);
     const rawVariants = dto.variants?.length
       ? dto.variants
       : existing?.variants?.length
@@ -184,26 +190,19 @@ export class ProductsService {
                 dto.oldPrice === undefined && existing?.oldPrice === undefined
                   ? undefined
                   : Number(dto.oldPrice ?? existing?.oldPrice),
-              isAvailable: dto.isAvailable ?? existing?.isAvailable ?? true,
-              stockStatus: dto.stockStatus ?? existing?.stockStatus,
+              images: legacyImages,
             },
           ];
 
     const variants = rawVariants
       .filter((variant) => variant.volume && Number(variant.price) >= 0)
-      .map((variant) => {
-        const isAvailable = variant.isAvailable ?? true;
-        return {
-          volume: variant.volume,
-          price: Number(variant.price),
-          oldPrice:
-            variant.oldPrice === undefined
-              ? undefined
-              : Number(variant.oldPrice),
-          isAvailable,
-          stockStatus: this.availabilityLabel(isAvailable),
-        };
-      });
+      .map((variant) => ({
+        volume: variant.volume,
+        price: Number(variant.price),
+        oldPrice:
+          variant.oldPrice === undefined ? undefined : Number(variant.oldPrice),
+        images: this.normalizeImages(variant.images, legacyImages),
+      }));
 
     return variants.length
       ? variants
@@ -215,10 +214,7 @@ export class ProductsService {
               dto.oldPrice === undefined && existing?.oldPrice === undefined
                 ? undefined
                 : Number(dto.oldPrice ?? existing?.oldPrice),
-            isAvailable: dto.isAvailable ?? existing?.isAvailable ?? true,
-            stockStatus: this.availabilityLabel(
-              dto.isAvailable ?? existing?.isAvailable ?? true,
-            ),
+            images: legacyImages,
           },
         ];
   }
@@ -227,27 +223,49 @@ export class ProductsService {
     return [...variants].sort((a, b) => Number(a.price) - Number(b.price))[0];
   }
 
-  private availabilityLabel(isAvailable: boolean) {
-    return isAvailable ? 'В наличии' : 'Нет в наличии';
+  private normalizeImages(images?: string[], fallback: string[] = []) {
+    const normalized = (images?.length ? images : fallback)
+      .map((image) => image?.trim())
+      .filter(Boolean);
+    return normalized.length ? normalized : [FALLBACK_PRODUCT_IMAGE];
+  }
+
+  private legacyImages(dto: Partial<CreateProductDto>, existing?: Product) {
+    return this.normalizeImages(
+      existing?.variants?.flatMap((variant) => variant.images ?? []) ??
+        dto.variants?.flatMap((variant) => variant.images ?? []) ??
+        [],
+    );
+  }
+
+  private toProductResponse(
+    product: Product,
+    extra: Record<string, unknown> = {},
+  ) {
+    const variants = this.normalizeVariants({}, product);
+    const primaryVariant = this.getPrimaryVariant(variants);
+    return {
+      ...product,
+      price: String(primaryVariant.price),
+      oldPrice:
+        primaryVariant.oldPrice === undefined
+          ? undefined
+          : String(primaryVariant.oldPrice),
+      volume: primaryVariant.volume,
+      variants,
+      ...extra,
+    };
   }
 
   async remove(id: string) {
-    const product = await this.findById(id);
+    const product = await this.findEntityById(id);
     await this.productsRepository.remove(product);
     return { ok: true };
   }
 
   async dashboard() {
-    const [
-      totalProducts,
-      availableProducts,
-      unavailableProducts,
-      featuredProducts,
-      newProducts,
-    ] = await Promise.all([
+    const [totalProducts, featuredProducts, newProducts] = await Promise.all([
       this.productsRepository.count(),
-      this.productsRepository.count({ where: { isAvailable: true } }),
-      this.productsRepository.count({ where: { isAvailable: false } }),
       this.productsRepository.count({ where: { isFeatured: true } }),
       this.productsRepository.count({ where: { isNew: true } }),
     ]);
@@ -260,11 +278,11 @@ export class ProductsService {
 
     return {
       totalProducts,
-      availableProducts,
-      unavailableProducts,
       featuredProducts,
       newProducts,
-      latestProducts,
+      latestProducts: latestProducts.map((product) =>
+        this.toProductResponse(product),
+      ),
     };
   }
 }

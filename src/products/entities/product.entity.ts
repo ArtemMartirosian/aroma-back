@@ -44,8 +44,7 @@ export type ProductVariant = {
   volume: string;
   price: number;
   oldPrice?: number;
-  isAvailable: boolean;
-  stockStatus: string;
+  images: string[];
 };
 
 @Entity('products')
@@ -93,18 +92,6 @@ export class Product {
 
   @Column({ type: 'text' })
   shortDescription!: string;
-
-  @Column({ nullable: true })
-  mainImage?: string;
-
-  @Column('text', { array: true, default: '{}' })
-  galleryImages!: string[];
-
-  @Column({ default: true })
-  isAvailable!: boolean;
-
-  @Column({ default: 'in_stock' })
-  stockStatus!: string;
 
   @Column({ default: false })
   isFeatured!: boolean;
