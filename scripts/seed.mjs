@@ -102,6 +102,21 @@ const categories = [
   },
 ];
 
+const PRODUCT_IMAGE_BY_SLUG = {
+  'dior-sauvage-eau-de-parfum-100ml': '/images/products/perfume-card-6.png',
+  'bleu-de-chanel-eau-de-parfum-100ml': '/images/products/perfume-card-3.png',
+  'chanel-coco-mademoiselle-eau-de-parfum-100ml': '/images/products/perfume-card-4.png',
+  'dior-jadore-eau-de-parfum-100ml': '/images/products/perfume-card-5.png',
+  'tom-ford-tobacco-vanille-eau-de-parfum-50ml': '/images/products/perfume-card-1.png',
+  'tom-ford-oud-wood-eau-de-parfum-50ml': '/images/products/perfume-card-6.png',
+  'byredo-gypsy-water-eau-de-parfum-100ml': '/images/products/perfume-card-2.png',
+  'maison-francis-kurkdjian-baccarat-rouge-540-eau-de-parfum-70ml': '/images/products/perfume-card-4.png',
+  'creed-aventus-eau-de-parfum-100ml': '/images/products/perfume-card-3.png',
+  'yves-saint-laurent-libre-eau-de-parfum-90ml': '/images/products/perfume-card-5.png',
+  'gucci-bloom-eau-de-parfum-100ml': '/images/products/perfume-card-2.png',
+  'versace-eros-eau-de-toilette-100ml': '/images/products/perfume-card-1.png',
+};
+
 const products = [
   {
     name: 'Dior Sauvage Eau de Parfum',
@@ -480,20 +495,27 @@ async function main() {
       throw new Error(`Missing brand/category for ${product.name}`);
     }
 
+    const productImage = PRODUCT_IMAGE_BY_SLUG[product.slug] ?? IMAGE_URL;
     const { brand: _brand, category: _category, ...payload } = product;
     const existingProduct = productBySlug.get(product.slug);
-    if (existingProduct?.variants?.length) continue;
-
     if (existingProduct) {
+      const needsVariants = !existingProduct.variants?.length;
+      const needsImage =
+        existingProduct.mainImage !== productImage ||
+        JSON.stringify(existingProduct.galleryImages ?? []) !== JSON.stringify([productImage]);
+
+      if (!needsVariants && !needsImage) continue;
+
       const updated = await request(`/admin/products/${existingProduct.id}`, {
         method: 'PATCH',
         token: accessToken,
         body: JSON.stringify({
-          variants: buildVariants(product),
+          ...(needsVariants ? { variants: buildVariants(product) } : {}),
+          ...(needsImage ? { mainImage: productImage, galleryImages: [productImage] } : {}),
         }),
       });
       productBySlug.set(updated.slug, updated);
-      console.log(`Updated product variants: ${updated.name}`);
+      console.log(`Updated product: ${updated.name}`);
       continue;
     }
 
@@ -504,8 +526,8 @@ async function main() {
         ...payload,
         brandId: brand.id,
         categoryId: category.id,
-        mainImage: IMAGE_URL,
-        galleryImages: [IMAGE_URL],
+        mainImage: productImage,
+        galleryImages: [productImage],
         variants: buildVariants(product),
         isAvailable: true,
         stockStatus: 'В наличии',
