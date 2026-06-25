@@ -131,12 +131,13 @@ export class ProductsService {
     return this.toProductResponse(await this.findEntityById(id));
   }
 
-  create(dto: CreateProductDto) {
+  async create(dto: CreateProductDto) {
     const variants = this.normalizeVariants(dto);
     const primaryVariant = this.getPrimaryVariant(variants);
+    const slug = await this.generateUniqueSlug(dto.name);
     const product = this.productsRepository.create({
       ...dto,
-      slug: dto.slug || slugify(dto.name),
+      slug,
       price: String(primaryVariant.price),
       oldPrice:
         primaryVariant.oldPrice === undefined
@@ -147,17 +148,20 @@ export class ProductsService {
       volume: primaryVariant.volume,
       variants,
     });
-    return this.productsRepository
-      .save(product)
-      .then((saved) => this.toProductResponse(saved));
+    return this.productsRepository.save(product).then((saved) => this.toProductResponse(saved));
   }
 
   async update(id: string, dto: UpdateProductDto) {
     const product = await this.findEntityById(id);
     const variants = this.normalizeVariants(dto, product);
     const primaryVariant = this.getPrimaryVariant(variants);
+    const nextSlug =
+      dto.name && dto.name.trim() !== product.name
+        ? await this.generateUniqueSlug(dto.name, id)
+        : product.slug;
+
     Object.assign(product, dto, {
-      slug: dto.slug || (dto.name ? slugify(dto.name) : product.slug),
+      slug: nextSlug,
       price: String(primaryVariant.price),
       oldPrice:
         primaryVariant.oldPrice === undefined
@@ -171,6 +175,38 @@ export class ProductsService {
     return this.productsRepository
       .save(product)
       .then((saved) => this.toProductResponse(saved));
+  }
+
+  private async generateUniqueSlug(name: string, excludeId?: string) {
+    const baseSlug = slugify(name) || 'product';
+    const query = this.productsRepository
+      .createQueryBuilder('product')
+      .select('product.slug', 'slug')
+      .where('product.slug = :baseSlug OR product.slug LIKE :slugPattern', {
+        baseSlug,
+        slugPattern: `${baseSlug}-%`,
+      });
+
+    if (excludeId) {
+      query.andWhere('product.id != :excludeId', { excludeId });
+    }
+
+    const existingRows = await query.getRawMany<{ slug: string }>();
+    const existingSlugs = new Set(existingRows.map((row) => row.slug));
+
+    if (!existingSlugs.has(baseSlug)) {
+      return baseSlug;
+    }
+
+    let suffix = 2;
+    let candidate = `${baseSlug}-${suffix}`;
+
+    while (existingSlugs.has(candidate)) {
+      suffix += 1;
+      candidate = `${baseSlug}-${suffix}`;
+    }
+
+    return candidate;
   }
 
   private normalizeVariants(
