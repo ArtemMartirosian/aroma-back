@@ -5,7 +5,12 @@ import { slugify } from '../common/slug';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto, ProductSort } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product, ProductVariant } from './entities/product.entity';
+import {
+  FragranceType,
+  Product,
+  ProductGender,
+  ProductVariant,
+} from './entities/product.entity';
 
 const FALLBACK_PRODUCT_IMAGE = '/images/products/perfume-card-1.png';
 
@@ -38,8 +43,11 @@ export class ProductsService {
       });
     if (query.gender)
       qb.andWhere('product.gender = :gender', { gender: query.gender });
-    if (query.type)
-      qb.andWhere('product.fragranceType = :type', { type: query.type });
+    if (query.fragranceType) {
+      qb.andWhere('product.fragranceType = :fragranceType', {
+        fragranceType: query.fragranceType,
+      });
+    }
     if (query.volume) {
       qb.andWhere(
         '(product.volume = :volume OR product.variants @> CAST(:volumeVariant AS jsonb))',
@@ -135,9 +143,12 @@ export class ProductsService {
     const variants = this.normalizeVariants(dto);
     const primaryVariant = this.getPrimaryVariant(variants);
     const slug = await this.generateUniqueSlug(dto.name);
-    const product = this.productsRepository.create({
-      ...dto,
+    const product = this.productsRepository.create();
+
+    Object.assign(product, dto, {
       slug,
+      gender: this.resolveGender(dto),
+      fragranceType: this.resolveFragranceType(dto),
       price: String(primaryVariant.price),
       oldPrice:
         primaryVariant.oldPrice === undefined
@@ -148,6 +159,7 @@ export class ProductsService {
       volume: primaryVariant.volume,
       variants,
     });
+
     return this.productsRepository.save(product).then((saved) => this.toProductResponse(saved));
   }
 
@@ -162,6 +174,8 @@ export class ProductsService {
 
     Object.assign(product, dto, {
       slug: nextSlug,
+      gender: this.resolveGender(dto, product),
+      fragranceType: this.resolveFragranceType(dto, product),
       price: String(primaryVariant.price),
       oldPrice:
         primaryVariant.oldPrice === undefined
@@ -257,6 +271,28 @@ export class ProductsService {
 
   private getPrimaryVariant(variants: ProductVariant[]) {
     return [...variants].sort((a, b) => Number(a.price) - Number(b.price))[0];
+  }
+
+  private resolveGender(
+    dto: Partial<CreateProductDto>,
+    existing?: Product,
+  ): ProductGender | null {
+    if (dto.gender !== undefined) {
+      return dto.gender;
+    }
+
+    return existing?.gender ?? ProductGender.Unisex;
+  }
+
+  private resolveFragranceType(
+    dto: Partial<CreateProductDto>,
+    existing?: Product,
+  ): FragranceType | null {
+    if (dto.fragranceType !== undefined) {
+      return dto.fragranceType;
+    }
+
+    return existing?.fragranceType ?? FragranceType.Floral;
   }
 
   private normalizeImages(images?: string[], fallback: string[] = []) {

@@ -7,7 +7,10 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { FragranceType, ProductGender } from '../entities/product.entity';
+import {
+  FragranceType,
+  ProductGender,
+} from '../entities/product.entity';
 
 export enum ProductSort {
   New = 'new',
@@ -35,7 +38,7 @@ export class ProductQueryDto {
 
   @IsOptional()
   @IsEnum(FragranceType)
-  type?: FragranceType;
+  fragranceType?: FragranceType;
 
   @IsOptional()
   @IsString()

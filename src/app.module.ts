@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { Brand } from './brands/entities/brand.entity';
 import { BrandsModule } from './brands/brands.module';
+import { CatalogSeedService } from './catalog-seed.service';
 import { Category } from './categories/entities/category.entity';
 import { CategoriesModule } from './categories/categories.module';
 import { AppController } from './app.controller';
@@ -27,12 +28,13 @@ import { ProductsModule } from './products/products.module';
         synchronize: config.get('DB_SYNCHRONIZE', 'true') === 'true',
       }),
     }),
+    TypeOrmModule.forFeature([Product, Brand, Category]),
     AuthModule,
     ProductsModule,
     BrandsModule,
     CategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CatalogSeedService],
 })
 export class AppModule {}

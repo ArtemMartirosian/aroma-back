@@ -81,11 +81,11 @@ export class Product {
   @Column()
   volume!: string;
 
-  @Column({ type: 'enum', enum: ProductGender })
-  gender!: ProductGender;
+  @Column({ type: 'enum', enum: ProductGender, nullable: true })
+  gender?: ProductGender;
 
-  @Column({ type: 'enum', enum: FragranceType })
-  fragranceType!: FragranceType;
+  @Column({ type: 'enum', enum: FragranceType, nullable: true })
+  fragranceType?: FragranceType;
 
   @Column({ type: 'text' })
   description!: string;

@@ -1,8 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsArray,
-  IsBoolean,
+  IsArray, IsBoolean,
   IsEnum,
   IsNumber,
   IsObject,
@@ -70,11 +69,15 @@ export class CreateProductDto {
   @IsString()
   volume?: string;
 
+  @ApiPropertyOptional({ enum: ProductGender })
+  @IsOptional()
   @IsEnum(ProductGender)
-  gender!: ProductGender;
+  gender?: ProductGender;
 
+  @ApiPropertyOptional({ enum: FragranceType })
+  @IsOptional()
   @IsEnum(FragranceType)
-  fragranceType!: FragranceType;
+  fragranceType?: FragranceType;
 
   @IsString()
   description!: string;
@@ -163,3 +166,4 @@ export class CreateProductDto {
   @Type(() => ProductVariantDto)
   variants?: ProductVariantDto[];
 }
+

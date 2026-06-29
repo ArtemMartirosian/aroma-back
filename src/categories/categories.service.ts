@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { slugify } from '../common/slug';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
+
+const PROTECTED_CATEGORY_SLUGS = new Set(['cosmetics', 'accessoires']);
 
 @Injectable()
 export class CategoriesService {
@@ -41,8 +43,13 @@ export class CategoriesService {
   async update(id: string, dto: UpdateCategoryDto) {
     const category = await this.categoriesRepository.findOneBy({ id });
     if (!category) throw new NotFoundException('Category not found');
+
+    const isProtectedCategory = PROTECTED_CATEGORY_SLUGS.has(category.slug);
+
     Object.assign(category, dto, {
-      slug: dto.slug || (dto.name ? slugify(dto.name) : category.slug),
+      slug: isProtectedCategory
+        ? category.slug
+        : dto.slug || (dto.name ? slugify(dto.name) : category.slug),
     });
     return this.categoriesRepository.save(category);
   }
@@ -50,6 +57,11 @@ export class CategoriesService {
   async remove(id: string) {
     const category = await this.categoriesRepository.findOneBy({ id });
     if (!category) throw new NotFoundException('Category not found');
+
+    if (PROTECTED_CATEGORY_SLUGS.has(category.slug)) {
+      throw new BadRequestException('Protected category cannot be removed');
+    }
+
     await this.categoriesRepository.remove(category);
     return { ok: true };
   }
