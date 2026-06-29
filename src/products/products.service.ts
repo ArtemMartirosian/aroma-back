@@ -234,7 +234,7 @@ export class ProductsService {
         ? existing.variants
         : [
             {
-              volume: dto.volume ?? existing?.volume ?? '100ml',
+              volume: dto.volume?.trim() ?? existing?.volume ?? '',
               price: Number(dto.price ?? existing?.price ?? 0),
               oldPrice:
                 dto.oldPrice === undefined && existing?.oldPrice === undefined
@@ -245,9 +245,9 @@ export class ProductsService {
           ];
 
     const variants = rawVariants
-      .filter((variant) => variant.volume && Number(variant.price) >= 0)
+      .filter((variant) => Number(variant.price) >= 0)
       .map((variant) => ({
-        volume: variant.volume,
+        volume: variant.volume?.trim() ?? '',
         price: Number(variant.price),
         oldPrice:
           variant.oldPrice === undefined ? undefined : Number(variant.oldPrice),
@@ -258,7 +258,7 @@ export class ProductsService {
       ? variants
       : [
           {
-            volume: dto.volume ?? existing?.volume ?? '100ml',
+            volume: dto.volume?.trim() ?? existing?.volume ?? '',
             price: Number(dto.price ?? existing?.price ?? 0),
             oldPrice:
               dto.oldPrice === undefined && existing?.oldPrice === undefined

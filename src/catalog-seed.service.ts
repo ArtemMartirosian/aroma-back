@@ -18,7 +18,7 @@ type SeedBrand = Pick<
 
 type SeedCategory = Pick<
   Category,
-  'name' | 'slug' | 'image' | 'description' | 'isActive'
+  'name' | 'slug' | 'description' | 'isActive'
 >;
 
 type SeedProduct = Omit<
@@ -89,7 +89,6 @@ const seedCategories: SeedCategory[] = [
     slug: 'female-fragrances',
     description:
       'Նուրբ ծաղկային, մրգային և էլեգանտ կոմպոզիցիաներ ամեն օրվա ու երեկոյի համար։',
-    image: '/images/products/perfume-card-1.png',
     isActive: true,
   },
   {
@@ -97,7 +96,6 @@ const seedCategories: SeedCategory[] = [
     slug: 'male-fragrances',
     description:
       'Փայտային, կծու և թարմ բույրեր ուժեղ ու հավաքված ներկայության համար։',
-    image: '/images/perfume-hero-men-1.png',
     isActive: true,
   },
   {
@@ -105,21 +103,18 @@ const seedCategories: SeedCategory[] = [
     slug: 'unisex-fragrances',
     description:
       'Ժամանակակից բույրեր առանց խիստ բաժանման՝ մաքուր, հարուստ և հիշվող շլեյֆով։',
-    image: '/images/products/perfume-card-4.png',
     isActive: true,
   },
   {
     name: 'Նիշային օծանելիք',
     slug: 'niche-fragrances',
     description: 'Բարդ և արտահայտիչ կոմպոզիցիաներ նրանց համար, ովքեր ուզում են տարբերվել։',
-    image: '/images/perfume-hero-men-2.png',
     isActive: true,
   },
   {
     name: 'Կոսմետիկա',
     slug: 'cosmetics',
     description: 'Խնամքի և գեղեցկության ընտրված միջոցներ ամենօրյա ռեժիմի համար։',
-    image: '/images/products/perfume-card-2.png',
     isActive: true,
   },
   {
@@ -127,7 +122,6 @@ const seedCategories: SeedCategory[] = [
     slug: 'accessoires',
     description:
       'Գեղեցկության և պահեստավորման էլեգանտ աքսեսուարներ՝ հարմար օգտագործման համար։',
-    image: '/images/products/perfume-card-6.png',
     isActive: true,
   },
 ];
@@ -459,15 +453,27 @@ export class CatalogSeedService implements OnApplicationBootstrap {
 
   private async seedCategories() {
     const existing = await this.categoriesRepository.find();
-    const existingBySlug = new Set(existing.map((category) => category.slug));
-    const missing = seedCategories.filter(
-      (category) => !existingBySlug.has(category.slug),
+    const existingBySlug = new Map(
+      existing.map((category) => [category.slug, category]),
     );
 
-    if (missing.length) {
-      await this.categoriesRepository.save(
-        this.categoriesRepository.create(missing),
+    const categoriesToSave = seedCategories.map((category) => {
+      const current = existingBySlug.get(category.slug);
+
+      return this.categoriesRepository.create(
+        current
+          ? {
+              ...current,
+              name: category.name,
+              description: category.description,
+              isActive: category.isActive,
+            }
+          : category,
       );
+    });
+
+    if (categoriesToSave.length) {
+      await this.categoriesRepository.save(categoriesToSave);
     }
 
     const saved = await this.categoriesRepository.find();

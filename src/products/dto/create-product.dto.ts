@@ -143,18 +143,8 @@ export class CreateProductDto {
   @ApiPropertyOptional({
     example: [
       {
-        volume: '20ml',
-        price: 18000,
-        images: ['/images/products/perfume-card-1.png'],
-      },
-      {
         volume: '50ml',
         price: 39000,
-        images: ['/images/products/perfume-card-2.png'],
-      },
-      {
-        volume: '100ml',
-        price: 59000,
         images: ['/images/products/perfume-card-3.png'],
       },
     ],
@@ -166,4 +156,3 @@ export class CreateProductDto {
   @Type(() => ProductVariantDto)
   variants?: ProductVariantDto[];
 }
-
