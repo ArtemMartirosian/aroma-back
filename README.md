@@ -31,6 +31,25 @@
 $ npm install
 ```
 
+## Docker
+
+Run backend and Postgres directly from the `backend` folder:
+
+```bash
+cd backend
+docker compose up --build
+```
+
+Backend API will be available at `http://localhost:4000/api`.
+
+Migrations run automatically on backend startup. Manual commands:
+
+```bash
+npm run migration:show
+npm run migration:run
+npm run migration:revert
+```
+
 ## Compile and run the project
 
 ```bash

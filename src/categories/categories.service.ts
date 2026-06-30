@@ -1,7 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { slugify } from '../common/slug';
+import { Product } from '../products/entities/product.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
@@ -13,6 +19,8 @@ export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoriesRepository: Repository<Category>,
+    @InjectRepository(Product)
+    private readonly productsRepository: Repository<Product>,
   ) {}
 
   findAll(includeInactive = false) {
@@ -32,12 +40,17 @@ export class CategoriesService {
     return category;
   }
 
-  create(dto: CreateCategoryDto) {
+  async create(dto: CreateCategoryDto) {
     const category = this.categoriesRepository.create({
       ...dto,
       slug: dto.slug || slugify(dto.name),
     });
-    return this.categoriesRepository.save(category);
+
+    try {
+      return await this.categoriesRepository.save(category);
+    } catch (error) {
+      this.rethrowConstraintError(error, dto.name);
+    }
   }
 
   async update(id: string, dto: UpdateCategoryDto) {
@@ -51,7 +64,11 @@ export class CategoriesService {
         ? category.slug
         : dto.slug || (dto.name ? slugify(dto.name) : category.slug),
     });
-    return this.categoriesRepository.save(category);
+    try {
+      return await this.categoriesRepository.save(category);
+    } catch (error) {
+      this.rethrowConstraintError(error, dto.name ?? category.name);
+    }
   }
 
   async remove(id: string) {
@@ -62,7 +79,30 @@ export class CategoriesService {
       throw new BadRequestException('Protected category cannot be removed');
     }
 
+    const productCount = await this.productsRepository.count({
+      where: { categoryId: id },
+    });
+    if (productCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete category "${category.name}" because ${productCount} product(s) still use it`,
+      );
+    }
+
     await this.categoriesRepository.remove(category);
     return { ok: true };
+  }
+
+  private rethrowConstraintError(error: unknown, fallbackName: string) {
+    if (
+      error instanceof QueryFailedError &&
+      (error as QueryFailedError & { driverError?: { code?: string } }).driverError
+        ?.code === '23505'
+    ) {
+      throw new ConflictException(
+        `Category "${fallbackName}" already exists. Use a different name or slug.`,
+      );
+    }
+
+    throw error;
   }
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -14,12 +15,23 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
-import { extname } from 'node:path';
+import { extname, join } from 'node:path';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
+
+const UPLOADS_DIR = join(process.cwd(), 'uploads');
+const ALLOWED_IMAGE_EXTENSIONS = new Set([
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.webp',
+  '.gif',
+  '.avif',
+  '.svg',
+]);
 
 @ApiTags('Products')
 @Controller()
@@ -83,8 +95,25 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
+      fileFilter: (_request, file, callback) => {
+        const extension = extname(file.originalname).toLowerCase();
+        if (!ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
+          callback(
+            new BadRequestException(
+              'Only image files are allowed (jpg, jpeg, png, webp, gif, avif, svg)',
+            ),
+            false,
+          );
+          return;
+        }
+
+        callback(null, true);
+      },
       storage: diskStorage({
-        destination: './uploads',
+        destination: UPLOADS_DIR,
         filename: (_request, file, callback) => {
           const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
           callback(null, `${unique}${extname(file.originalname)}`);
@@ -93,7 +122,11 @@ export class ProductsController {
     }),
   )
   @Post('admin/products/upload-image')
-  uploadImage(@UploadedFile() file: { filename: string }) {
+  uploadImage(@UploadedFile() file?: { filename: string }) {
+    if (!file?.filename) {
+      throw new BadRequestException('Image file is required');
+    }
+
     return {
       url: `/uploads/${file.filename}`,
       filename: file.filename,

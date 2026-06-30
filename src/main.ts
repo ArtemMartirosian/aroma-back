@@ -2,11 +2,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const uploadsDir = join(process.cwd(), 'uploads');
+
+  mkdirSync(uploadsDir, { recursive: true });
 
   app.enableCors({
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
@@ -20,7 +24,7 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+  app.useStaticAssets(uploadsDir, {
     prefix: '/uploads/',
   });
 
