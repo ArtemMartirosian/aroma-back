@@ -21,12 +21,14 @@ class ProductVariantDto {
   @IsString()
   volume!: string;
 
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   price!: number;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   oldPrice?: number;
@@ -54,12 +56,14 @@ export class CreateProductDto {
   categoryId!: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   price?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   oldPrice?: number;
@@ -137,6 +141,7 @@ export class CreateProductDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   releaseYear?: number;
 
