@@ -139,7 +139,6 @@ const seedProducts: SeedProduct[] = [
     fragranceType: FragranceType.Floral,
     description:
       'Թեթև ցիտրուսային բացումով և նուրբ պաչուլի-վարդային սրտով բույր, որը հնչում է մաքուր, կանացի և շատ հավաքված։',
-    shortDescription: 'Կանացի, էլեգանտ և ժամանակակից ֆրանսիական դասական։',
     isFeatured: true,
     isNew: false,
     isActive: true,
@@ -178,7 +177,6 @@ const seedProducts: SeedProduct[] = [
     fragranceType: FragranceType.Spicy,
     description:
       'Հագեցած կծու և փայտային կոմպոզիցիա՝ թարմ բացումով ու խորը տաք հիմքով։ Համարձակ և երկարատև տարբերակ ամեն օրվա համար։',
-    shortDescription: 'Խորը, ուժեղ և ժամանակակից արական բույր։',
     isFeatured: true,
     isNew: true,
     isActive: true,
@@ -210,7 +208,6 @@ const seedProducts: SeedProduct[] = [
     gender: ProductGender.Unisex,
     fragranceType: FragranceType.Woody,
     description: 'Մուգ, թանկ և շատ շքեղ փայտային բույր՝ ուդի, սանդալի ու տաք համեմունքների խորությամբ։',
-    shortDescription: 'Շքեղ փայտային ունիսեքս՝ մուգ տրամադրությամբ։',
     isFeatured: true,
     isNew: false,
     isActive: true,
@@ -243,7 +240,6 @@ const seedProducts: SeedProduct[] = [
     fragranceType: FragranceType.Sweet,
     description:
       'Ամբրային-քաղցր նիշային բույր՝ շաքարային շողքով, թեթև ծխախոտային-փայտային խորությամբ և շատ հարուստ աուրայով։',
-    shortDescription: 'Պաշտամունքային նիշային բույր՝ հարուստ ու ճանաչելի։',
     isFeatured: true,
     isNew: true,
     isActive: true,
@@ -281,7 +277,6 @@ const seedProducts: SeedProduct[] = [
     gender: ProductGender.Female,
     fragranceType: FragranceType.Floral,
     description: 'Լավանդայի, հասմիկի և վանիլի գեղեցիկ հավասարակշռություն՝ շատ կանացի, մաքուր և վստահ տրամադրությամբ։',
-    shortDescription: 'Ժամանակակից կանացի բույր՝ մաքուր ու էլեգանտ։',
     isFeatured: false,
     isNew: true,
     isActive: true,
@@ -313,7 +308,6 @@ const seedProducts: SeedProduct[] = [
     gender: ProductGender.Female,
     description:
       'Խոնավեցնող դեմքի քսուք՝ թեթև հյուսվածքով, հարմար ամենօրյա խնամքի համար և գեղեցիկ, խնամված տեսքի զգացողությամբ։',
-    shortDescription: 'Լյուքս խոնավեցնող քսուք՝ նուրբ ամենօրյա խնամքի համար։',
     isFeatured: false,
     isNew: true,
     isActive: true,
@@ -345,7 +339,6 @@ const seedProducts: SeedProduct[] = [
     gender: ProductGender.Female,
     description:
       'Շուրթերի խնամքի փայլ՝ փափուկ խնամքով, նուրբ փայլով և հարմար ամենօրյա beauty աքսենտի համար։',
-    shortDescription: 'Խնամող շուրթերի փայլ՝ թեթև ու գեղեցիկ ավարտով։',
     isFeatured: true,
     isNew: true,
     isActive: true,
@@ -371,7 +364,6 @@ const seedProducts: SeedProduct[] = [
     gender: ProductGender.Unisex,
     description:
       'Էլեգանտ travel case՝ parfume կամ beauty essentials-ը հարմար և անվտանգ պահելու համար։',
-    shortDescription: 'Պրեմիում ճանապարհային աքսեսուար՝ գեղեցիկ և գործնական։',
     isFeatured: false,
     isNew: true,
     isActive: true,
@@ -397,7 +389,6 @@ const seedProducts: SeedProduct[] = [
     gender: ProductGender.Unisex,
     description:
       'Մինիմալիստական pouch՝ cosmetics և փոքր աքսեսուարները կոկիկ պահելու ու ճանապարհին հետդ վերցնելու համար։',
-    shortDescription: 'Նրբագեղ vanity pouch՝ cosmetics-ի և accessories-ի համար։',
     isFeatured: true,
     isNew: false,
     isActive: true,

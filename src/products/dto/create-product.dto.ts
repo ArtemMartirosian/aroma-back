@@ -86,9 +86,6 @@ export class CreateProductDto {
   @IsString()
   description!: string;
 
-  @IsString()
-  shortDescription!: string;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()

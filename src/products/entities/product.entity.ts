@@ -90,9 +90,6 @@ export class Product {
   @Column({ type: 'text' })
   description!: string;
 
-  @Column({ type: 'text' })
-  shortDescription!: string;
-
   @Column({ default: false })
   isFeatured!: boolean;
 

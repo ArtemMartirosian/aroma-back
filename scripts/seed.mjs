@@ -137,7 +137,6 @@ const products = [
     volume: '100ml',
     gender: 'male',
     fragranceType: 'fresh',
-    shortDescription: 'Свежий пряный аромат с бергамотом, перцем и амброксаном.',
     description:
       'Dior Sauvage Eau de Parfum раскрывается свежим бергамотом, пряным сердцем и теплой амброво-древесной базой. Универсальный мужской аромат на каждый день и вечер.',
     topNotes: 'бергамот, перец',
@@ -160,7 +159,6 @@ const products = [
     volume: '100ml',
     gender: 'male',
     fragranceType: 'woody',
-    shortDescription: 'Древесно-ароматический мужской аромат с цитрусом и сандалом.',
     description:
       'Bleu de Chanel Eau de Parfum сочетает цитрусовую свежесть, ароматические акценты и элегантную древесную базу. Сдержанный, статусный и очень носибельный аромат.',
     topNotes: 'грейпфрут, лимон, мята',
@@ -183,7 +181,6 @@ const products = [
     volume: '100ml',
     gender: 'female',
     fragranceType: 'oriental',
-    shortDescription: 'Элегантный восточно-цветочный аромат с пачули и розой.',
     description:
       'Coco Mademoiselle Eau de Parfum — яркая женственная композиция с цитрусовым стартом, цветочным сердцем и теплой базой из пачули, ванили и мускуса.',
     topNotes: 'апельсин, мандарин, бергамот',
@@ -206,7 +203,6 @@ const products = [
     volume: '100ml',
     gender: 'female',
     fragranceType: 'floral',
-    shortDescription: 'Солнечный цветочный букет с жасмином, иланг-илангом и розой.',
     description:
       "J'adore Eau de Parfum — узнаваемый женский аромат Dior с богатым цветочным сердцем, сияющим характером и мягким шлейфом.",
     topNotes: 'магнолия, дыня, груша',
@@ -229,7 +225,6 @@ const products = [
     volume: '50ml',
     gender: 'unisex',
     fragranceType: 'sweet',
-    shortDescription: 'Теплый табак, ваниль, какао и сухофрукты в насыщенной базе.',
     description:
       'Tobacco Vanille — густой восточно-пряный аромат Tom Ford Private Blend с табаком, ванилью, какао и сладкими сухофруктами.',
     topNotes: 'табачный лист, пряности',
@@ -252,7 +247,6 @@ const products = [
     volume: '50ml',
     gender: 'unisex',
     fragranceType: 'woody',
-    shortDescription: 'Мягкий уд, сандал, кардамон и ваниль в элегантном шлейфе.',
     description:
       'Oud Wood — один из самых узнаваемых древесных ароматов Tom Ford: сухой уд, пряный кардамон, сандал и мягкая ваниль.',
     topNotes: 'кардамон, розовое дерево',
@@ -275,7 +269,6 @@ const products = [
     volume: '100ml',
     gender: 'unisex',
     fragranceType: 'woody',
-    shortDescription: 'Свежий можжевельник, хвоя, ладан и мягкая ваниль.',
     description:
       'Gypsy Water — прозрачный древесно-ароматический унисекс аромат Byredo с цитрусами, можжевельником, хвоей, ладаном и ванильной базой.',
     topNotes: 'бергамот, лимон, перец, можжевельник',
@@ -298,7 +291,6 @@ const products = [
     volume: '70ml',
     gender: 'unisex',
     fragranceType: 'sweet',
-    shortDescription: 'Шафран, жасмин, амбра и кедр с узнаваемым воздушным шлейфом.',
     description:
       'Baccarat Rouge 540 Eau de Parfum — яркий унисекс аромат с шафраном, жасмином, амбровым аккордом и кедровой базой.',
     topNotes: 'шафран, жасмин',
@@ -321,7 +313,6 @@ const products = [
     volume: '100ml',
     gender: 'male',
     fragranceType: 'fresh',
-    shortDescription: 'Ананас, бергамот, береза, мускус и дубовый мох.',
     description:
       'Aventus — известный фруктово-древесный мужской аромат Creed с ананасом, бергамотом, дымной березой, мускусом и дубовым мхом.',
     topNotes: 'ананас, бергамот, черная смородина, яблоко',
@@ -344,7 +335,6 @@ const products = [
     volume: '90ml',
     gender: 'female',
     fragranceType: 'floral',
-    shortDescription: 'Лаванда, апельсиновый цвет, ваниль и мускус.',
     description:
       'Libre Eau de Parfum — современный цветочно-лавандовый аромат YSL с апельсиновым цветом, ванилью и чистой мускусной базой.',
     topNotes: 'лаванда, мандарин, черная смородина',
@@ -367,7 +357,6 @@ const products = [
     volume: '100ml',
     gender: 'female',
     fragranceType: 'floral',
-    shortDescription: 'Белые цветы, тубероза, жасмин и рангунская лиана.',
     description:
       'Gucci Bloom Eau de Parfum — насыщенный белоцветочный аромат с туберозой, жасмином и мягкой зеленой гранью.',
     topNotes: 'жасмин',
@@ -391,7 +380,6 @@ const products = [
     volume: '100ml',
     gender: 'male',
     fragranceType: 'fresh',
-    shortDescription: 'Мята, зеленое яблоко, лимон, бобы тонка и ваниль.',
     description:
       'Versace Eros Eau de Toilette — яркий свежий мужской аромат с мятой, зеленым яблоком, лимоном, бобами тонка и ванилью.',
     topNotes: 'мята, зеленое яблоко, лимон',
