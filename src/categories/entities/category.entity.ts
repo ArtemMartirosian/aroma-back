@@ -16,11 +16,23 @@ export class Category {
   @Column({ unique: true })
   name!: string;
 
+  @Column({ nullable: true })
+  nameRu?: string;
+
+  @Column({ nullable: true })
+  nameEn?: string;
+
   @Column({ unique: true })
   slug!: string;
 
   @Column({ type: 'text', nullable: true })
   description?: string;
+
+  @Column({ type: 'text', nullable: true })
+  descriptionRu?: string;
+
+  @Column({ type: 'text', nullable: true })
+  descriptionEn?: string;
 
   @Column({ default: true })
   isActive!: boolean;

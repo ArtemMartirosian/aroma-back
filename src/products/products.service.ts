@@ -32,9 +32,16 @@ export class ProductsService {
     if (!includeInactive)
       qb.andWhere('product.isActive = :isActive', { isActive: true });
     if (query.search) {
-      qb.andWhere('LOWER(product.name) LIKE LOWER(:search)', {
-        search: `%${query.search}%`,
-      });
+      qb.andWhere(
+        `(
+          LOWER(product.name) LIKE LOWER(:search)
+          OR LOWER(COALESCE(product."nameRu", '')) LIKE LOWER(:search)
+          OR LOWER(COALESCE(product."nameEn", '')) LIKE LOWER(:search)
+        )`,
+        {
+          search: `%${query.search}%`,
+        },
+      );
     }
     if (query.brand) qb.andWhere('brand.slug = :brand', { brand: query.brand });
     if (query.category)
@@ -142,7 +149,7 @@ export class ProductsService {
   async create(dto: CreateProductDto) {
     const variants = this.normalizeVariants(dto);
     const primaryVariant = this.getPrimaryVariant(variants);
-    const slug = await this.generateUniqueSlug(dto.name);
+    const slug = await this.generateUniqueSlug(this.getSlugSource(dto));
     const product = this.productsRepository.create();
 
     Object.assign(product, dto, {
@@ -168,8 +175,8 @@ export class ProductsService {
     const variants = this.normalizeVariants(dto, product);
     const primaryVariant = this.getPrimaryVariant(variants);
     const nextSlug =
-      dto.name && dto.name.trim() !== product.name
-        ? await this.generateUniqueSlug(dto.name, id)
+      dto.name || dto.nameRu || dto.nameEn
+        ? await this.generateUniqueSlug(this.getSlugSource(dto, product), id)
         : product.slug;
 
     Object.assign(product, dto, {
@@ -221,6 +228,21 @@ export class ProductsService {
     }
 
     return candidate;
+  }
+
+  private getSlugSource(
+    dto: Partial<CreateProductDto>,
+    existing?: Product,
+  ) {
+    return (
+      dto.nameEn?.trim() ||
+      dto.nameRu?.trim() ||
+      dto.name?.trim() ||
+      existing?.nameEn?.trim() ||
+      existing?.nameRu?.trim() ||
+      existing?.name?.trim() ||
+      'product'
+    );
   }
 
   private normalizeVariants(

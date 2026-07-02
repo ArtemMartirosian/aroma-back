@@ -8,6 +8,16 @@ export class CreateBrandDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  nameRu?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  nameEn?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   slug?: string;
 
   @ApiPropertyOptional()
@@ -24,6 +34,16 @@ export class CreateBrandDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  descriptionRu?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  descriptionEn?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

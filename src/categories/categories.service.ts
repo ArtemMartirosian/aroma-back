@@ -43,7 +43,7 @@ export class CategoriesService {
   async create(dto: CreateCategoryDto) {
     const category = this.categoriesRepository.create({
       ...dto,
-      slug: dto.slug || slugify(dto.name),
+      slug: dto.slug || slugify(this.getSlugSource(dto)),
     });
 
     try {
@@ -62,7 +62,10 @@ export class CategoriesService {
     Object.assign(category, dto, {
       slug: isProtectedCategory
         ? category.slug
-        : dto.slug || (dto.name ? slugify(dto.name) : category.slug),
+        : dto.slug ||
+          (dto.name || dto.nameRu || dto.nameEn
+            ? slugify(this.getSlugSource(dto, category))
+            : category.slug),
     });
     try {
       return await this.categoriesRepository.save(category);
@@ -104,5 +107,17 @@ export class CategoriesService {
     }
 
     throw error;
+  }
+
+  private getSlugSource(dto: Partial<CreateCategoryDto>, existing?: Category) {
+    return (
+      dto.nameEn?.trim() ||
+      dto.nameRu?.trim() ||
+      dto.name?.trim() ||
+      existing?.nameEn?.trim() ||
+      existing?.nameRu?.trim() ||
+      existing?.name?.trim() ||
+      'category'
+    );
   }
 }

@@ -55,6 +55,12 @@ export class Product {
   @Column()
   name!: string;
 
+  @Column({ nullable: true })
+  nameRu?: string;
+
+  @Column({ nullable: true })
+  nameEn?: string;
+
   @Column({ unique: true })
   slug!: string;
 
@@ -90,6 +96,12 @@ export class Product {
   @Column({ type: 'text' })
   description!: string;
 
+  @Column({ type: 'text', nullable: true })
+  descriptionRu?: string;
+
+  @Column({ type: 'text', nullable: true })
+  descriptionEn?: string;
+
   @Column({ default: false })
   isFeatured!: boolean;
 
@@ -103,10 +115,28 @@ export class Product {
   topNotes?: string;
 
   @Column({ type: 'text', nullable: true })
+  topNotesRu?: string;
+
+  @Column({ type: 'text', nullable: true })
+  topNotesEn?: string;
+
+  @Column({ type: 'text', nullable: true })
   middleNotes?: string;
 
   @Column({ type: 'text', nullable: true })
+  middleNotesRu?: string;
+
+  @Column({ type: 'text', nullable: true })
+  middleNotesEn?: string;
+
+  @Column({ type: 'text', nullable: true })
   baseNotes?: string;
+
+  @Column({ type: 'text', nullable: true })
+  baseNotesRu?: string;
+
+  @Column({ type: 'text', nullable: true })
+  baseNotesEn?: string;
 
   @Column({ type: 'enum', enum: Longevity, nullable: true })
   longevity?: Longevity;
@@ -116,6 +146,12 @@ export class Product {
 
   @Column({ nullable: true })
   concentration?: string;
+
+  @Column({ nullable: true })
+  concentrationRu?: string;
+
+  @Column({ nullable: true })
+  concentrationEn?: string;
 
   @Column({ nullable: true })
   country?: string;

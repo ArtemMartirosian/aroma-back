@@ -41,7 +41,7 @@ export class BrandsService {
   async create(dto: CreateBrandDto) {
     const brand = this.brandsRepository.create({
       ...dto,
-      slug: dto.slug || slugify(dto.name),
+      slug: dto.slug || slugify(this.getSlugSource(dto)),
     });
 
     try {
@@ -56,7 +56,11 @@ export class BrandsService {
     if (!brand) throw new NotFoundException('Brand not found');
 
     Object.assign(brand, dto, {
-      slug: dto.slug || (dto.name ? slugify(dto.name) : brand.slug),
+      slug:
+        dto.slug ||
+        (dto.name || dto.nameRu || dto.nameEn
+          ? slugify(this.getSlugSource(dto, brand))
+          : brand.slug),
     });
 
     try {
@@ -95,5 +99,17 @@ export class BrandsService {
     }
 
     throw error;
+  }
+
+  private getSlugSource(dto: Partial<CreateBrandDto>, existing?: Brand) {
+    return (
+      dto.nameEn?.trim() ||
+      dto.nameRu?.trim() ||
+      dto.name?.trim() ||
+      existing?.nameEn?.trim() ||
+      existing?.nameRu?.trim() ||
+      existing?.name?.trim() ||
+      'brand'
+    );
   }
 }

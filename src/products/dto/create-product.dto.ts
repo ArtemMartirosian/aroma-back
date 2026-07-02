@@ -47,6 +47,16 @@ export class CreateProductDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  nameRu?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  nameEn?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   slug?: string;
 
   @IsString()
@@ -88,6 +98,16 @@ export class CreateProductDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
+  descriptionRu?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  descriptionEn?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsBoolean()
   isFeatured?: boolean;
 
@@ -109,12 +129,42 @@ export class CreateProductDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  topNotesRu?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  topNotesEn?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   middleNotes?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  middleNotesRu?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  middleNotesEn?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   baseNotes?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  baseNotesRu?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  baseNotesEn?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -130,6 +180,16 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   concentration?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  concentrationRu?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  concentrationEn?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
